@@ -11,27 +11,40 @@ export const DEFAULT_SELECTED = ["LEVIA_SUMMER_PEARL", "TEREA_BRONZE", "TEREA_TU
 /** The settings list shows these groups, in this order, each sorted by name. */
 export const LINES = ["Terea", "Levia"];
 
+/** Opens a database at whatever version it has; a new one gets its single store. Never asks for an upgrade. */
+function openDatabase(name, store, keyPath) {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(name);
+    request.onupgradeneeded = () => {
+      if (!request.result.objectStoreNames.contains(store)) request.result.createObjectStore(store, { keyPath });
+    };
+    request.onsuccess = () => {
+      // Should anything ever ask for a newer version, let go rather than hold it back.
+      request.result.onversionchange = () => request.result.close();
+      resolve(request.result);
+    };
+    request.onerror = () => reject(request.error);
+  });
+}
+
 /**
- * The browser's own database (IndexedDB): the log, one record per entry keyed by its id, and the settings,
- * one record per key. It survives closing the page, the browser and the phone; only clearing the site's
- * data removes it.
+ * The browser's own storage (IndexedDB): the log in the database "smoke", one record per entry keyed by its
+ * id, and the settings in the database "smoke-settings", one record per key. Both survive closing the page,
+ * the browser and the phone; only clearing the site's data removes them.
+ *
+ * Two databases, each opened at the version it has, because adding a store to an existing database is an
+ * upgrade, and the browser holds an upgrade back for as long as any other page has that database open
+ * (2026-10-03: the settings store was added to "smoke" that way, and with an older tab or the installed copy
+ * still open the page stayed black forever). Nothing here ever asks for an upgrade of a database that exists.
  */
 export class BrowserDatabase {
   constructor(name = "smoke") {
-    this.opened = new Promise((resolve, reject) => {
-      const request = indexedDB.open(name, 2);
-      request.onupgradeneeded = () => {
-        const db = request.result;
-        if (!db.objectStoreNames.contains("entries")) db.createObjectStore("entries", { keyPath: "id" });
-        if (!db.objectStoreNames.contains("settings")) db.createObjectStore("settings", { keyPath: "key" });
-      };
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
-    });
+    this.entries = openDatabase(name, "entries", "id");
+    this.settings = openDatabase(`${name}-settings`, "settings", "key");
   }
 
-  async run(name, mode, work) {
-    const db = await this.opened;
+  async run(opened, name, mode, work) {
+    const db = await opened;
     return new Promise((resolve, reject) => {
       const transaction = db.transaction(name, mode);
       const request = work(transaction.objectStore(name));
@@ -40,11 +53,20 @@ export class BrowserDatabase {
     });
   }
 
-  all() { return this.run("entries", "readonly", (store) => store.getAll()); }
-  put(entry) { return this.run("entries", "readwrite", (store) => store.put(entry)); }
-  delete(id) { return this.run("entries", "readwrite", (store) => store.delete(id)); }
-  async setting(key) { return (await this.run("settings", "readonly", (store) => store.get(key)))?.value; }
-  saveSetting(key, value) { return this.run("settings", "readwrite", (store) => store.put({ key, value })); }
+  all() { return this.run(this.entries, "entries", "readonly", (store) => store.getAll()); }
+  put(entry) { return this.run(this.entries, "entries", "readwrite", (store) => store.put(entry)); }
+  delete(id) { return this.run(this.entries, "entries", "readwrite", (store) => store.delete(id)); }
+
+  async setting(key) {
+    const record = await this.run(this.settings, "settings", "readonly", (store) => store.get(key));
+    if (record) return record.value;
+    // A selection made on 2026-10-03, while the settings were a store inside the log's database.
+    const old = await this.entries;
+    if (!old.objectStoreNames.contains("settings")) return undefined;
+    return (await this.run(this.entries, "settings", "readonly", (store) => store.get(key)))?.value;
+  }
+
+  saveSetting(key, value) { return this.run(this.settings, "settings", "readwrite", (store) => store.put({ key, value })); }
 }
 
 /**
@@ -58,9 +80,11 @@ export class Log {
     this.saved = Promise.resolve();
   }
 
-  /** Reads the stored entries; call once before use. */
+  /** Reads the stored entries; call once. Entries added while the read was under way are kept. */
   async load() {
-    this.entries = (await this.database.all()).sort((a, b) => b.time - a.time);
+    const stored = await this.database.all();
+    const known = new Set(stored.map((e) => e.id));
+    this.entries = [...stored, ...this.entries.filter((e) => !known.has(e.id))].sort((a, b) => b.time - a.time);
     return this;
   }
 
@@ -95,8 +119,13 @@ export class Selection {
   }
 
   async load() {
-    const stored = await this.database.setting("selected");
-    if (Array.isArray(stored)) this.ids = stored;
+    try {
+      const stored = await this.database.setting("selected");
+      if (Array.isArray(stored)) this.ids = stored;
+    } catch (error) {
+      // The settings cannot be read: the default packs.
+      this.failed = error;
+    }
     return this;
   }
 
@@ -191,12 +220,12 @@ export function days(entries) {
 async function start() {
   // Ask the browser never to evict the database when storage runs low.
   navigator.storage?.persist?.();
-  const database = new BrowserDatabase();
-  const [products, log, selection] = await Promise.all([
-    fetch("products.json").then((response) => response.json()),
-    new Log(database).load(),
-    new Selection(database).load(),
-  ]);
+  // The page is drawn and works before the database answers: a slow or stuck database must never leave an
+  // empty screen. What it holds is drawn when it arrives.
+  const database = new BrowserDatabase("smoke");
+  const log = new Log(database);
+  const selection = new Selection(database);
+  const products = await fetch("products.json").then((response) => response.json());
   // An entry of a product that is no longer in the list still shows, under its id.
   const label = (id) => products.find((p) => p.id === id)?.label ?? id;
   const el = (tag, props = {}, ...children) => {
@@ -299,9 +328,19 @@ async function start() {
   window.addEventListener("pagehide", () => taps.store());
   renderStrip();
   render();
+  selection.load().then(renderStrip);
+  const waiting = setTimeout(() => {
+    if (!log.entries.length) list.textContent = "The log is not answering. Close every other smoke tab or window, then reopen this one.";
+  }, 4000);
+  log.load().then(() => { clearTimeout(waiting); render(); });
 
   // Work offline once loaded.
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
 }
 
-if (typeof document !== "undefined") start();
+// Whatever goes wrong while starting is said on the page, never left as an empty screen.
+if (typeof document !== "undefined") {
+  start().catch((error) => {
+    document.getElementById("log").textContent = `smoke could not start: ${error?.message ?? error}`;
+  });
+}
