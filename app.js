@@ -10,9 +10,6 @@ export const DEFAULT_SELECTED = ["LEVIA_SUMMER_PEARL", "TEREA_BRONZE", "TEREA_TU
 
 /** The settings list shows these groups, in this order, each sorted by name. */
 export const LINES = ["Terea", "Levia"];
-// The countries whose packs the settings offer, and the one a pack without a country belongs to.
-export const COUNTRIES = ["HR", "PL"];
-export const DEFAULT_COUNTRY = "PL";
 
 /** Opens a database at whatever version it has; a new one gets its single store. Never asks for an upgrade. */
 function openDatabase(name, store, keyPath) {
@@ -113,16 +110,11 @@ export class Log {
   }
 }
 
-/**
- * Which packs are on the strip, in the order they were chosen, and which country's list the settings open
- * on: kept in the settings database under the keys "selected" and "country". Packs of any country can be
- * on the strip together.
- */
+/** Which packs are on the strip: kept in the settings database, under the key "selected". */
 export class Selection {
   constructor(database) {
     this.database = database;
     this.ids = [...DEFAULT_SELECTED];
-    this.country = DEFAULT_COUNTRY;
     this.saved = Promise.resolve();
   }
 
@@ -130,8 +122,6 @@ export class Selection {
     try {
       const stored = await this.database.setting("selected");
       if (Array.isArray(stored)) this.ids = stored;
-      const country = await this.database.setting("country");
-      if (COUNTRIES.includes(country)) this.country = country;
     } catch (error) {
       // The settings cannot be read: the default packs.
       this.failed = error;
@@ -141,53 +131,24 @@ export class Selection {
 
   has(id) { return this.ids.includes(id); }
 
-  /**
-   * Puts a pack on the strip or takes it off. `same` are the other packs of the same stick (the other
-   * countries' packaging of it): choosing one takes those off, so a stick is on the strip once, in the
-   * packaging chosen last.
-   */
-  set(id, selected, same = []) {
-    const rest = this.ids.filter((x) => x !== id && !(selected && same.includes(x)));
-    this.ids = selected ? [...rest, id] : rest;
-    this.save("selected", this.ids);
-  }
-
-  setCountry(country) {
-    this.country = country;
-    this.save("country", country);
-  }
-
-  save(key, value) {
-    this.saved = this.saved.then(() => this.database.saveSetting(key, value)).catch((error) => { this.failed = error; });
+  set(id, selected) {
+    this.ids = selected ? [...new Set([...this.ids, id])] : this.ids.filter((x) => x !== id);
+    const ids = this.ids;
+    this.saved = this.saved.then(() => this.database.saveSetting("selected", ids)).catch((error) => { this.failed = error; });
   }
 }
 
 const byLabel = (a, b) => a.label.localeCompare(b.label, "en");
 
-/** The stick a pack holds: the same stick sold in two countries is two packs (label, picture) of one stick. */
-export const stickOf = (product) => product.stick ?? product.id;
-
-/** The other packs of the same stick as the given one. */
-export function sameStick(products, id) {
-  const product = products.find((p) => p.id === id);
-  return product ? products.filter((p) => p.id !== id && stickOf(p) === stickOf(product)).map((p) => p.id) : [];
-}
-
-/** The selected packs as they stand on the strip: one per stick (the one chosen last), sorted by name. */
+/** The selected products as they stand on the strip: sorted by name. */
 export function strip(products, selection) {
-  const chosen = new Map();
-  for (const id of selection.ids) {
-    const product = products.find((p) => p.id === id);
-    if (product) chosen.set(stickOf(product), product);
-  }
-  return [...chosen.values()].sort(byLabel);
+  return products.filter((p) => selection.has(p.id)).sort(byLabel);
 }
 
-/** One country's packs for the settings list: one group per line, in the order of LINES, each sorted by name. */
-export function groups(products, country) {
-  const there = products.filter((p) => !country || (p.country ?? DEFAULT_COUNTRY) === country);
+/** All products for the settings list: one group per line, in the order of LINES, each sorted by name. */
+export function groups(products) {
   return LINES
-    .map((line) => ({ line, products: there.filter((p) => p.line === line).sort(byLabel) }))
+    .map((line) => ({ line, products: products.filter((p) => p.line === line).sort(byLabel) }))
     .filter((group) => group.products.length);
 }
 
@@ -266,9 +227,7 @@ async function start() {
   const selection = new Selection(database);
   const products = await fetch("products.json").then((response) => response.json());
   // An entry of a product that is no longer in the list still shows, under its id.
-  // The log holds sticks, not packs: the same stick from either country's pack is the same entry.
-  const label = (id) => products.find((p) => stickOf(p) === id)?.label ?? id;
-  const several = (product) => new Set(products.filter((p) => stickOf(p) === stickOf(product)).map((p) => p.country)).size > 1;
+  const label = (id) => products.find((p) => p.id === id)?.label ?? id;
   const el = (tag, props = {}, ...children) => {
     const node = Object.assign(document.createElement(tag), props);
     node.append(...children);
@@ -314,10 +273,8 @@ async function start() {
     buttons.replaceChildren(
       // The button is the picture of the pack, no caption; the name is there for screen readers.
       ...strip(products, selection).map((product) =>
-        el("button", { className: "tap", ariaLabel: product.label, onclick: () => taps.tap(stickOf(product)) },
-          el("img", { src: product.image, alt: "", draggable: false }),
-          // Sold in both countries: a small mark says whose pack this is.
-          ...(several(product) ? [el("span", { className: "flag", textContent: product.country })] : []))),
+        el("button", { className: "tap", ariaLabel: product.label, onclick: () => taps.tap(product.id) },
+          el("img", { src: product.image, alt: "", draggable: false }))),
     );
     arrows();
   };
@@ -350,19 +307,14 @@ async function start() {
     setTimeout(() => buttons.removeEventListener("click", swallow, { capture: true }), 0);
   });
 
-  // Settings: a tab per country, its packs grouped by line and sorted by name; ticked ones are on the strip.
+  // Settings: every product, grouped by line and sorted by name; ticked ones are on the strip.
   const renderSettings = () => {
-    document.getElementById("countries").replaceChildren(
-      ...COUNTRIES.map((country) =>
-        el("button", { className: "country", textContent: country, ariaPressed: String(country === selection.country),
-          onclick: () => { selection.setCountry(country); renderSettings(); } })),
-    );
     document.getElementById("products").replaceChildren(
-      ...groups(products, selection.country).flatMap((group) => [
+      ...groups(products).flatMap((group) => [
         el("h3", { textContent: group.line }),
         ...group.products.map((product) => {
           const box = el("input", { type: "checkbox", checked: selection.has(product.id) });
-          box.onchange = () => { selection.set(product.id, box.checked, sameStick(products, product.id)); renderStrip(); };
+          box.onchange = () => { selection.set(product.id, box.checked); renderStrip(); };
           return el("label", { className: "product" }, box, el("img", { src: product.image, alt: "", loading: "lazy" }), el("span", { textContent: product.label }));
         }),
       ]),

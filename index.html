@@ -31,9 +31,7 @@
   #buttons::-webkit-scrollbar { display: none; }
   .tap { flex: 0 0 calc((100% - 16px) / 3); scroll-snap-align: start; background: var(--tonal); border-radius: 16px;
     min-height: 104px; padding: 8px; display: flex; align-items: center; justify-content: center;
-    touch-action: pan-x; user-select: none; position: relative; }
-  .flag { position: absolute; right: 6px; top: 6px; font-size: 10px; font-weight: 600; line-height: 1; padding: 3px 5px;
-    border-radius: 6px; background: color-mix(in srgb, var(--bg) 80%, transparent); color: var(--muted); pointer-events: none; }
+    touch-action: pan-x; user-select: none; }
   .tap:active { filter: brightness(.92); }
   .tap img { display: block; width: 100%; height: auto; max-height: 120px; object-fit: contain; pointer-events: none; }
   .arrow { position: absolute; top: 50%; transform: translateY(-50%); width: 32px; height: 48px; border-radius: 16px;
@@ -60,9 +58,6 @@
   dialog { border: 0; border-radius: 20px; padding: 0; width: min(92vw, 440px); max-height: 86vh; background: var(--bg); color: var(--fg); }
   dialog::backdrop { background: rgba(0, 0, 0, .5); }
   #settings[open] { display: flex; flex-direction: column; }
-  #countries { display: flex; gap: 8px; padding: 12px 16px 4px; }
-  .country { flex: 1; padding: 10px; border-radius: 20px; font-weight: 500; background: var(--tonal); color: var(--muted); }
-  .country[aria-pressed="true"] { background: var(--accent); color: var(--bg); }
   #products { overflow-y: auto; padding: 4px 16px; }
   h3 { position: sticky; top: 0; background: var(--bg); margin: 0; padding: 12px 0 6px; font-size: 14px; font-weight: 500; color: var(--muted); }
   .product { display: flex; align-items: center; gap: 12px; min-height: 56px; font-size: 14px; }
@@ -84,7 +79,6 @@
   <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19.14,12.94c0.04,-0.3 0.06,-0.61 0.06,-0.94c0,-0.32 -0.02,-0.64 -0.07,-0.94l2.03,-1.58c0.18,-0.14 0.23,-0.41 0.12,-0.61l-1.92,-3.32c-0.12,-0.22 -0.37,-0.29 -0.59,-0.22l-2.39,0.96c-0.5,-0.38 -1.03,-0.7 -1.62,-0.94L14.4,2.81c-0.04,-0.24 -0.24,-0.41 -0.48,-0.41h-3.84c-0.24,0 -0.43,0.17 -0.47,0.41L9.25,5.35C8.66,5.59 8.12,5.92 7.63,6.29L5.24,5.33c-0.22,-0.08 -0.47,0 -0.59,0.22L2.74,8.87C2.62,9.08 2.66,9.34 2.86,9.48l2.03,1.58C4.84,11.36 4.8,11.69 4.8,12s0.02,0.64 0.07,0.94l-2.03,1.58c-0.18,0.14 -0.23,0.41 -0.12,0.61l1.92,3.32c0.12,0.22 0.37,0.29 0.59,0.22l2.39,-0.96c0.5,0.38 1.03,0.7 1.62,0.94l0.36,2.54c0.05,0.24 0.24,0.41 0.48,0.41h3.84c0.24,0 0.44,-0.17 0.47,-0.41l0.36,-2.54c0.59,-0.24 1.13,-0.56 1.62,-0.94l2.39,0.96c0.22,0.08 0.47,0 0.59,-0.22l1.92,-3.32c0.12,-0.22 0.07,-0.47 -0.12,-0.61L19.14,12.94zM12,15.6c-1.98,0 -3.6,-1.62 -3.6,-3.6s1.62,-3.6 3.6,-3.6s3.6,1.62 3.6,3.6S13.98,15.6 12,15.6z"/></svg>
 </button>
 <dialog id="settings" aria-label="Packs on the strip">
-  <div id="countries"></div>
   <div id="products"></div>
   <div class="bar"><button id="done" class="text">Done</button></div>
 </dialog>
