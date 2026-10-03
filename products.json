@@ -3,120 +3,248 @@
     "id": "LEVIA_SUMMER_PEARL",
     "label": "Levia Summer Pearl",
     "line": "Levia",
-    "image": "boxes/levia-summer-pearl.png"
+    "image": "boxes/levia-summer-pearl.png",
+    "stick": "LEVIA_SUMMER_PEARL",
+    "country": "PL"
   },
   {
     "id": "TEREA_BRONZE",
     "label": "Terea Bronze",
     "line": "Terea",
-    "image": "boxes/terea-bronze.png"
+    "image": "boxes/terea-bronze.png",
+    "stick": "TEREA_BRONZE",
+    "country": "PL"
   },
   {
     "id": "TEREA_TURQUOISE_BLACK",
     "label": "Terea Turquoise Black Edition",
     "line": "Terea",
-    "image": "boxes/terea-turquoise-black-edition.png"
+    "image": "boxes/terea-turquoise-black-edition.png",
+    "stick": "TEREA_TURQUOISE_BLACK",
+    "country": "PL"
   },
   {
     "id": "terea-russet",
     "label": "Terea Russet",
     "line": "Terea",
-    "image": "boxes/terea-russet.png"
+    "image": "boxes/terea-russet.png",
+    "stick": "terea-russet",
+    "country": "PL"
   },
   {
     "id": "terea-amber",
     "label": "Terea Amber",
     "line": "Terea",
-    "image": "boxes/terea-amber.png"
+    "image": "boxes/terea-amber.png",
+    "stick": "terea-amber",
+    "country": "PL"
   },
   {
     "id": "terea-silver",
     "label": "Terea Silver",
     "line": "Terea",
-    "image": "boxes/terea-silver.png"
+    "image": "boxes/terea-silver.png",
+    "stick": "terea-silver",
+    "country": "PL"
   },
   {
     "id": "terea-yellow",
     "label": "Terea Yellow",
     "line": "Terea",
-    "image": "boxes/terea-yellow.png"
+    "image": "boxes/terea-yellow.png",
+    "stick": "terea-yellow",
+    "country": "PL"
   },
   {
     "id": "terea-turquoise",
     "label": "Terea Turquoise",
     "line": "Terea",
-    "image": "boxes/terea-turquoise.png"
+    "image": "boxes/terea-turquoise.png",
+    "stick": "terea-turquoise",
+    "country": "PL"
   },
   {
     "id": "terea-sienna",
     "label": "Terea Sienna",
     "line": "Terea",
-    "image": "boxes/terea-sienna.png"
+    "image": "boxes/terea-sienna.png",
+    "stick": "terea-sienna",
+    "country": "PL"
   },
   {
     "id": "terea-teak",
     "label": "Terea Teak",
     "line": "Terea",
-    "image": "boxes/terea-teak.png"
+    "image": "boxes/terea-teak.png",
+    "stick": "terea-teak",
+    "country": "PL"
   },
   {
     "id": "terea-soft-fuse",
     "label": "Terea Soft Fuse",
     "line": "Terea",
-    "image": "boxes/terea-soft-fuse.png"
+    "image": "boxes/terea-soft-fuse.png",
+    "stick": "terea-soft-fuse",
+    "country": "PL"
   },
   {
     "id": "levia-grapefruit-with-watermelon-pearl",
     "label": "Levia Grapefruit with Watermelon Pearl",
     "line": "Levia",
-    "image": "boxes/levia-grapefruit-with-watermelon-pearl.png"
+    "image": "boxes/levia-grapefruit-with-watermelon-pearl.png",
+    "stick": "levia-grapefruit-with-watermelon-pearl",
+    "country": "PL"
   },
   {
     "id": "levia-melon-with-blueberry-pearl",
     "label": "Levia Melon with Blueberry Pearl",
     "line": "Levia",
-    "image": "boxes/levia-melon-with-blueberry-pearl.png"
+    "image": "boxes/levia-melon-with-blueberry-pearl.png",
+    "stick": "levia-melon-with-blueberry-pearl",
+    "country": "PL"
   },
   {
     "id": "levia-berry-pearl",
     "label": "Levia Berry Pearl",
     "line": "Levia",
-    "image": "boxes/levia-berry-pearl.png"
+    "image": "boxes/levia-berry-pearl.png",
+    "stick": "levia-berry-pearl",
+    "country": "PL"
   },
   {
     "id": "levia-citrus-with-peppermint-pearl",
     "label": "Levia Citrus with Peppermint Pearl",
     "line": "Levia",
-    "image": "boxes/levia-citrus-with-peppermint-pearl.png"
+    "image": "boxes/levia-citrus-with-peppermint-pearl.png",
+    "stick": "levia-citrus-with-peppermint-pearl",
+    "country": "PL"
   },
   {
     "id": "levia-lime-with-strawberry-pearl",
     "label": "Levia Lime with Strawberry Pearl",
     "line": "Levia",
-    "image": "boxes/levia-lime-with-strawberry-pearl.png"
+    "image": "boxes/levia-lime-with-strawberry-pearl.png",
+    "stick": "levia-lime-with-strawberry-pearl",
+    "country": "PL"
   },
   {
     "id": "levia-minty-with-strawberry-pearl",
     "label": "Levia Minty with Strawberry Pearl",
     "line": "Levia",
-    "image": "boxes/levia-minty-with-strawberry-pearl.png"
+    "image": "boxes/levia-minty-with-strawberry-pearl.png",
+    "stick": "levia-minty-with-strawberry-pearl",
+    "country": "PL"
   },
   {
     "id": "levia-alpine",
     "label": "Levia Alpine",
     "line": "Levia",
-    "image": "boxes/levia-alpine.png"
+    "image": "boxes/levia-alpine.png",
+    "stick": "levia-alpine",
+    "country": "PL"
   },
   {
     "id": "levia-glacial",
     "label": "Levia Glacial",
     "line": "Levia",
-    "image": "boxes/levia-glacial.png"
+    "image": "boxes/levia-glacial.png",
+    "stick": "levia-glacial",
+    "country": "PL"
   },
   {
     "id": "levia-glacial-black-edition",
     "label": "Levia Glacial Black Edition",
     "line": "Levia",
-    "image": "boxes/levia-glacial-black-edition.png"
+    "image": "boxes/levia-glacial-black-edition.png",
+    "stick": "levia-glacial-black-edition",
+    "country": "PL"
+  },
+  {
+    "id": "hr-terea-amber",
+    "label": "Terea Amber",
+    "line": "Terea",
+    "image": "boxes/terea-amber.png",
+    "stick": "terea-amber",
+    "country": "HR"
+  },
+  {
+    "id": "hr-terea-bronze",
+    "label": "Terea Bronze",
+    "line": "Terea",
+    "image": "boxes/terea-bronze.png",
+    "stick": "TEREA_BRONZE",
+    "country": "HR"
+  },
+  {
+    "id": "hr-terea-mauve-wave",
+    "label": "Terea Mauve Wave",
+    "line": "Terea",
+    "image": "boxes/hr-terea-mauve-wave.png",
+    "stick": "terea-mauve-wave",
+    "country": "HR"
+  },
+  {
+    "id": "hr-terea-russet",
+    "label": "Terea Russet",
+    "line": "Terea",
+    "image": "boxes/terea-russet.png",
+    "stick": "terea-russet",
+    "country": "HR"
+  },
+  {
+    "id": "hr-terea-sienna",
+    "label": "Terea Sienna",
+    "line": "Terea",
+    "image": "boxes/terea-sienna.png",
+    "stick": "terea-sienna",
+    "country": "HR"
+  },
+  {
+    "id": "hr-terea-silver",
+    "label": "Terea Silver",
+    "line": "Terea",
+    "image": "boxes/terea-silver.png",
+    "stick": "terea-silver",
+    "country": "HR"
+  },
+  {
+    "id": "hr-terea-soft-fuse",
+    "label": "Terea Soft Fuse",
+    "line": "Terea",
+    "image": "boxes/terea-soft-fuse.png",
+    "stick": "terea-soft-fuse",
+    "country": "HR"
+  },
+  {
+    "id": "hr-terea-teak",
+    "label": "Terea Teak",
+    "line": "Terea",
+    "image": "boxes/terea-teak.png",
+    "stick": "terea-teak",
+    "country": "HR"
+  },
+  {
+    "id": "hr-terea-turquoise",
+    "label": "Terea Turquoise",
+    "line": "Terea",
+    "image": "boxes/terea-turquoise.png",
+    "stick": "terea-turquoise",
+    "country": "HR"
+  },
+  {
+    "id": "hr-terea-willow",
+    "label": "Terea Willow",
+    "line": "Terea",
+    "image": "boxes/hr-terea-willow.png",
+    "stick": "terea-willow",
+    "country": "HR"
+  },
+  {
+    "id": "hr-terea-yellow",
+    "label": "Terea Yellow",
+    "line": "Terea",
+    "image": "boxes/terea-yellow.png",
+    "stick": "terea-yellow",
+    "country": "HR"
   }
 ]
