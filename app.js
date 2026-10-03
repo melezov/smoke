@@ -335,7 +335,13 @@ async function start() {
   log.load().then(() => { clearTimeout(waiting); render(); });
 
   // Work offline once loaded.
-  if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
+  if ("serviceWorker" in navigator) {
+    // A new version of the worker taking over means new files: start again on them, so the page never runs
+    // half old, half new.
+    const controlled = navigator.serviceWorker.controller;
+    navigator.serviceWorker.addEventListener("controllerchange", () => { if (controlled) location.reload(); });
+    navigator.serviceWorker.register("sw.js");
+  }
 }
 
 // Whatever goes wrong while starting is said on the page, never left as an empty screen.

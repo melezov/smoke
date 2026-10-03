@@ -8,7 +8,7 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE)
       .then(async (cache) => {
-        await cache.addAll(FILES);
+        await cache.addAll(FILES.map((file) => new Request(file, { cache: "no-cache" })));
         // Every pack picture of the product list, so the settings list and any selection work offline too.
         const products = await (await fetch("products.json")).json();
         await Promise.all(products.map((product) => cache.add(product.image).catch(() => {})));
@@ -28,7 +28,11 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
   event.respondWith(
-    fetch(event.request)
+    // "no-cache": always ask the server whether the file changed. GitHub Pages lets the browser reuse a file
+    // for ten minutes without asking, so right after a deploy the page could run a new index.html with an old
+    // app.js (2026-10-03: the settings button did nothing, the old script looked for an element the new page
+    // no longer had).
+    fetch(event.request.url, { cache: "no-cache" })
       .then((response) => {
         if (response.ok) {
           const copy = response.clone();
