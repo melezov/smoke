@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>smoke</title>
+<meta name="theme-color" content="#1F2933">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #fdf7ff; --fg: #1d1b20; --muted: #49454f; --tonal: #e8def8; --bar: #e8def8; --accent: #5b4b8a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #141218; --fg: #e6e0e9; --muted: #cac4d0; --tonal: #4a4458; --bar: #4a4458; --accent: #d0bcff; }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg);
+    font: 16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  body { display: flex; flex-direction: column;
+    padding: max(12px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 0 max(16px, env(safe-area-inset-left)); }
+  h1 { font-size: 22px; font-weight: 400; margin: 4px 0 12px; }
+  #buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .tap { background: var(--tonal); border-radius: 16px; min-height: 104px; padding: 12px 6px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+    font-size: 12px; font-weight: 500; letter-spacing: .03em; text-align: center; touch-action: manipulation; user-select: none; }
+  .tap:active { filter: brightness(.92); }
+  .tap svg { width: 36px; height: 36px; }
+  #pending { background: var(--bar); border-radius: 12px; margin-top: 12px; padding: 4px 4px 4px 16px;
+    display: flex; align-items: center; }
+  #pending[hidden] { display: none; }
+  #pending .what { flex: 1; font-size: 16px; font-weight: 500; }
+  .text { color: var(--accent); padding: 10px 12px; border-radius: 20px; font-weight: 500; }
+  #log { flex: 1; overflow-y: auto; margin-top: 12px; padding-bottom: env(safe-area-inset-bottom); }
+  h2 { position: sticky; top: 0; background: var(--bg); margin: 0; padding: 6px 0; font-size: 14px; font-weight: 500; }
+  .row { display: flex; align-items: center; min-height: 44px; font-size: 14px; }
+  .time { width: 76px; font-variant-numeric: tabular-nums; }
+  .name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .x { font-size: 18px; padding: 8px 16px; }
+</style>
+</head>
+<body>
+<h1>smoke</h1>
+<div id="buttons"></div>
+<div id="pending" hidden></div>
+<div id="log"></div>
+<script type="module" src="app.js"></script>
+</body>
+</html>
