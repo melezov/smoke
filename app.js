@@ -6,9 +6,9 @@ export const MAX_COUNT = 5;          // at most this many sticks in one entry
 export const WINDOW_MS = 5000;       // taps within this window count up the same entry
 
 export const PRODUCTS = [
-  { id: "LEVIA_SUMMER_PEARL", label: "Levia Summer Pearl", color: "#F2823A" },
-  { id: "TEREA_BRONZE", label: "Terea Bronze", color: "#A9713A" },
-  { id: "TEREA_TURQUOISE_BLACK", label: "Terea Turquoise Black Edition", color: "#1FA7B5" },
+  { id: "LEVIA_SUMMER_PEARL", label: "Levia Summer Pearl", image: "boxes/levia-summer-pearl.png" },
+  { id: "TEREA_BRONZE", label: "Terea Bronze", image: "boxes/terea-bronze.png" },
+  { id: "TEREA_TURQUOISE_BLACK", label: "Terea Turquoise Black Edition", image: "boxes/terea-turquoise-black-edition.png" },
 ];
 
 /**
@@ -144,8 +144,6 @@ export function days(entries) {
 
 // ---- the page (not run under the tests, which have no document) ----
 
-const ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M2,16h15v3L2,19zM20.5,16L22,16v3h-1.5zM18,16h1.5v3L18,19zM18.85,7.73c0.62,-0.61 1,-1.45 1,-2.38C19.85,3.5 18.35,2 16.5,2v1.5c1.02,0 1.85,0.83 1.85,1.85S17.52,7.2 16.5,7.2v1.5c2.24,0 4,1.83 4,4.07L20.5,15L22,15v-2.24c0,-2.22 -1.28,-4.14 -3.15,-5.03zM16.03,10.2L14.5,10.2c-1.02,0 -1.85,-0.98 -1.85,-2s0.83,-1.75 1.85,-1.75v-1.5c-1.85,0 -3.35,1.5 -3.35,3.35s1.5,3.35 3.35,3.35h1.53c1.05,0 1.97,0.74 1.97,2.05L18,15h1.5v-1.64c0,-1.81 -1.6,-3.16 -3.47,-3.16z"/></svg>';
-
 async function start() {
   // Ask the browser never to evict the database when storage runs low.
   navigator.storage?.persist?.();
@@ -184,11 +182,11 @@ async function start() {
 
   const taps = new Taps(log, { onChange: render });
   for (const product of PRODUCTS) {
-    const button = el("button", { className: "tap", onclick: () => taps.tap(product.id) });
-    button.innerHTML = ICON;
-    button.firstChild.style.color = product.color;
-    button.append(el("span", { textContent: product.label }));
-    buttons.append(button);
+    // The button is the picture of the pack, no caption; the name is there for screen readers.
+    buttons.append(
+      el("button", { className: "tap", ariaLabel: product.label, onclick: () => taps.tap(product.id) },
+        el("img", { src: product.image, alt: "", draggable: false })),
+    );
   }
   // Leaving the page logs the entry being tapped, so nothing is lost with the tab.
   document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") taps.store(); });

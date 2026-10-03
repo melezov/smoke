@@ -2,7 +2,8 @@
 // Online, the network is asked first and the cache refreshed, so a new version of the app arrives by itself
 // the next time the page is opened; offline, the cached copy is served.
 const CACHE = "smoke";
-const FILES = ["./", "index.html", "app.js", "manifest.webmanifest", "icon.svg", "icon-192.png", "icon-512.png", "icon-maskable-512.png"];
+const FILES = ["./", "index.html", "app.js", "manifest.webmanifest", "icon.svg", "icon-192.png", "icon-512.png", "icon-maskable-512.png",
+  "boxes/levia-summer-pearl.png", "boxes/terea-bronze.png", "boxes/terea-turquoise-black-edition.png"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(FILES)).then(() => self.skipWaiting()));
