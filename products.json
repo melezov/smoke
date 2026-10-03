@@ -1,0 +1,122 @@
+[
+  {
+    "id": "LEVIA_SUMMER_PEARL",
+    "label": "Levia Summer Pearl",
+    "line": "Levia",
+    "image": "boxes/levia-summer-pearl.png"
+  },
+  {
+    "id": "TEREA_BRONZE",
+    "label": "Terea Bronze",
+    "line": "Terea",
+    "image": "boxes/terea-bronze.png"
+  },
+  {
+    "id": "TEREA_TURQUOISE_BLACK",
+    "label": "Terea Turquoise Black Edition",
+    "line": "Terea",
+    "image": "boxes/terea-turquoise-black-edition.png"
+  },
+  {
+    "id": "terea-russet",
+    "label": "Terea Russet",
+    "line": "Terea",
+    "image": "boxes/terea-russet.png"
+  },
+  {
+    "id": "terea-amber",
+    "label": "Terea Amber",
+    "line": "Terea",
+    "image": "boxes/terea-amber.png"
+  },
+  {
+    "id": "terea-silver",
+    "label": "Terea Silver",
+    "line": "Terea",
+    "image": "boxes/terea-silver.png"
+  },
+  {
+    "id": "terea-yellow",
+    "label": "Terea Yellow",
+    "line": "Terea",
+    "image": "boxes/terea-yellow.png"
+  },
+  {
+    "id": "terea-turquoise",
+    "label": "Terea Turquoise",
+    "line": "Terea",
+    "image": "boxes/terea-turquoise.png"
+  },
+  {
+    "id": "terea-sienna",
+    "label": "Terea Sienna",
+    "line": "Terea",
+    "image": "boxes/terea-sienna.png"
+  },
+  {
+    "id": "terea-teak",
+    "label": "Terea Teak",
+    "line": "Terea",
+    "image": "boxes/terea-teak.png"
+  },
+  {
+    "id": "terea-soft-fuse",
+    "label": "Terea Soft Fuse",
+    "line": "Terea",
+    "image": "boxes/terea-soft-fuse.png"
+  },
+  {
+    "id": "levia-grapefruit-with-watermelon-pearl",
+    "label": "Levia Grapefruit with Watermelon Pearl",
+    "line": "Levia",
+    "image": "boxes/levia-grapefruit-with-watermelon-pearl.png"
+  },
+  {
+    "id": "levia-melon-with-blueberry-pearl",
+    "label": "Levia Melon with Blueberry Pearl",
+    "line": "Levia",
+    "image": "boxes/levia-melon-with-blueberry-pearl.png"
+  },
+  {
+    "id": "levia-berry-pearl",
+    "label": "Levia Berry Pearl",
+    "line": "Levia",
+    "image": "boxes/levia-berry-pearl.png"
+  },
+  {
+    "id": "levia-citrus-with-peppermint-pearl",
+    "label": "Levia Citrus with Peppermint Pearl",
+    "line": "Levia",
+    "image": "boxes/levia-citrus-with-peppermint-pearl.png"
+  },
+  {
+    "id": "levia-lime-with-strawberry-pearl",
+    "label": "Levia Lime with Strawberry Pearl",
+    "line": "Levia",
+    "image": "boxes/levia-lime-with-strawberry-pearl.png"
+  },
+  {
+    "id": "levia-minty-with-strawberry-pearl",
+    "label": "Levia Minty with Strawberry Pearl",
+    "line": "Levia",
+    "image": "boxes/levia-minty-with-strawberry-pearl.png"
+  },
+  {
+    "id": "levia-alpine",
+    "label": "Levia Alpine",
+    "line": "Levia",
+    "image": "boxes/levia-alpine.png"
+  },
+  {
+    "id": "levia-glacial",
+    "label": "Levia Glacial",
+    "line": "Levia",
+    "image": "boxes/levia-glacial.png"
+  },
+  {
+    "id": "levia-glacial-black-edition",
+    "label": "Levia Glacial Black Edition",
+    "line": "Levia",
+    "image": "boxes/levia-glacial-black-edition.png"
+  }
+]

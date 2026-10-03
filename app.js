@@ -1,43 +1,50 @@
-// smoke, the web version: the same three buttons, counting and log as the Android app, running in the browser.
-// Nothing is sent anywhere: the log lives in this browser's own database (IndexedDB) on this phone.
+// smoke, the web version: pack buttons, counting and a log, running in the browser.
+// Nothing is sent anywhere: the log and the settings live in this browser's own database (IndexedDB) on this phone.
 
 export const ZONE = "Europe/Zagreb"; // entry times are shown in this zone, whatever the phone is set to
 export const MAX_COUNT = 5;          // at most this many sticks in one entry
 export const WINDOW_MS = 5000;       // taps within this window count up the same entry
 
-export const PRODUCTS = [
-  { id: "LEVIA_SUMMER_PEARL", label: "Levia Summer Pearl", image: "boxes/levia-summer-pearl.png" },
-  { id: "TEREA_BRONZE", label: "Terea Bronze", image: "boxes/terea-bronze.png" },
-  { id: "TEREA_TURQUOISE_BLACK", label: "Terea Turquoise Black Edition", image: "boxes/terea-turquoise-black-edition.png" },
-];
+/** The packs on the strip until the user chooses others in the settings. */
+export const DEFAULT_SELECTED = ["LEVIA_SUMMER_PEARL", "TEREA_BRONZE", "TEREA_TURQUOISE_BLACK"];
+
+/** The settings list shows these groups, in this order, each sorted by name. */
+export const LINES = ["Terea", "Levia"];
 
 /**
- * Where the log is kept: the browser's own database (IndexedDB), one record per entry, keyed by its id.
- * It survives closing the page, the browser and the phone; only clearing the site's data removes it.
+ * The browser's own database (IndexedDB): the log, one record per entry keyed by its id, and the settings,
+ * one record per key. It survives closing the page, the browser and the phone; only clearing the site's
+ * data removes it.
  */
 export class BrowserDatabase {
   constructor(name = "smoke") {
     this.opened = new Promise((resolve, reject) => {
-      const request = indexedDB.open(name, 1);
-      request.onupgradeneeded = () => request.result.createObjectStore("entries", { keyPath: "id" });
+      const request = indexedDB.open(name, 2);
+      request.onupgradeneeded = () => {
+        const db = request.result;
+        if (!db.objectStoreNames.contains("entries")) db.createObjectStore("entries", { keyPath: "id" });
+        if (!db.objectStoreNames.contains("settings")) db.createObjectStore("settings", { keyPath: "key" });
+      };
       request.onsuccess = () => resolve(request.result);
       request.onerror = () => reject(request.error);
     });
   }
 
-  async run(mode, work) {
+  async run(name, mode, work) {
     const db = await this.opened;
     return new Promise((resolve, reject) => {
-      const transaction = db.transaction("entries", mode);
-      const request = work(transaction.objectStore("entries"));
+      const transaction = db.transaction(name, mode);
+      const request = work(transaction.objectStore(name));
       transaction.oncomplete = () => resolve(request?.result);
       transaction.onerror = transaction.onabort = () => reject(transaction.error);
     });
   }
 
-  all() { return this.run("readonly", (store) => store.getAll()); }
-  put(entry) { return this.run("readwrite", (store) => store.put(entry)); }
-  delete(id) { return this.run("readwrite", (store) => store.delete(id)); }
+  all() { return this.run("entries", "readonly", (store) => store.getAll()); }
+  put(entry) { return this.run("entries", "readwrite", (store) => store.put(entry)); }
+  delete(id) { return this.run("entries", "readwrite", (store) => store.delete(id)); }
+  async setting(key) { return (await this.run("settings", "readonly", (store) => store.get(key)))?.value; }
+  saveSetting(key, value) { return this.run("settings", "readwrite", (store) => store.put({ key, value })); }
 }
 
 /**
@@ -77,6 +84,43 @@ export class Log {
   write(change) {
     this.saved = this.saved.then(change).catch((error) => { this.failed = error; });
   }
+}
+
+/** Which packs are on the strip: kept in the same database as the log, under the key "selected". */
+export class Selection {
+  constructor(database) {
+    this.database = database;
+    this.ids = [...DEFAULT_SELECTED];
+    this.saved = Promise.resolve();
+  }
+
+  async load() {
+    const stored = await this.database.setting("selected");
+    if (Array.isArray(stored)) this.ids = stored;
+    return this;
+  }
+
+  has(id) { return this.ids.includes(id); }
+
+  set(id, selected) {
+    this.ids = selected ? [...new Set([...this.ids, id])] : this.ids.filter((x) => x !== id);
+    const ids = this.ids;
+    this.saved = this.saved.then(() => this.database.saveSetting("selected", ids)).catch((error) => { this.failed = error; });
+  }
+}
+
+const byLabel = (a, b) => a.label.localeCompare(b.label, "en");
+
+/** The selected products as they stand on the strip: sorted by name. */
+export function strip(products, selection) {
+  return products.filter((p) => selection.has(p.id)).sort(byLabel);
+}
+
+/** All products for the settings list: one group per line, in the order of LINES, each sorted by name. */
+export function groups(products) {
+  return LINES
+    .map((line) => ({ line, products: products.filter((p) => p.line === line).sort(byLabel) }))
+    .filter((group) => group.products.length);
 }
 
 /**
@@ -131,15 +175,15 @@ export const timeOf = (time) => TIME.format(new Date(time)); // 16:37:46
 
 /** The entries grouped by day, newest day first: [{ day, sticks, entries }]. */
 export function days(entries) {
-  const groups = [];
+  const result = [];
   for (const entry of entries) {
     const day = dayOf(entry.time);
-    let group = groups[groups.length - 1];
-    if (!group || group.day !== day) groups.push((group = { day, sticks: 0, entries: [] }));
+    let group = result[result.length - 1];
+    if (!group || group.day !== day) result.push((group = { day, sticks: 0, entries: [] }));
     group.sticks += entry.count;
     group.entries.push(entry);
   }
-  return groups;
+  return result;
 }
 
 // ---- the page (not run under the tests, which have no document) ----
@@ -147,8 +191,14 @@ export function days(entries) {
 async function start() {
   // Ask the browser never to evict the database when storage runs low.
   navigator.storage?.persist?.();
-  const log = await new Log(new BrowserDatabase()).load();
-  const label = (id) => PRODUCTS.find((p) => p.id === id)?.label ?? id;
+  const database = new BrowserDatabase();
+  const [products, log, selection] = await Promise.all([
+    fetch("products.json").then((response) => response.json()),
+    new Log(database).load(),
+    new Selection(database).load(),
+  ]);
+  // An entry of a product that is no longer in the list still shows, under its id.
+  const label = (id) => products.find((p) => p.id === id)?.label ?? id;
   const el = (tag, props = {}, ...children) => {
     const node = Object.assign(document.createElement(tag), props);
     node.append(...children);
@@ -156,8 +206,11 @@ async function start() {
   };
 
   const buttons = document.getElementById("buttons");
+  const left = document.getElementById("left");
+  const right = document.getElementById("right");
   const pendingBar = document.getElementById("pending");
   const list = document.getElementById("log");
+  const settings = document.getElementById("settings");
 
   const render = () => {
     pendingBar.hidden = !taps.pending;
@@ -179,18 +232,72 @@ async function start() {
       ]),
     );
   };
-
   const taps = new Taps(log, { onChange: render });
-  for (const product of PRODUCTS) {
-    // The button is the picture of the pack, no caption; the name is there for screen readers.
-    buttons.append(
-      el("button", { className: "tap", ariaLabel: product.label, onclick: () => taps.tap(product.id) },
-        el("img", { src: product.image, alt: "", draggable: false })),
+
+  // The strip: the selected packs, three to a screen; more than fit are reached by sliding or the arrows.
+  const arrows = () => {
+    const most = buttons.scrollWidth - buttons.clientWidth;
+    left.hidden = buttons.scrollLeft <= 1;
+    right.hidden = buttons.scrollLeft >= most - 1;
+  };
+  const renderStrip = () => {
+    buttons.replaceChildren(
+      // The button is the picture of the pack, no caption; the name is there for screen readers.
+      ...strip(products, selection).map((product) =>
+        el("button", { className: "tap", ariaLabel: product.label, onclick: () => taps.tap(product.id) },
+          el("img", { src: product.image, alt: "", draggable: false }))),
     );
-  }
+    arrows();
+  };
+  const step = () => (buttons.firstElementChild?.getBoundingClientRect().width ?? buttons.clientWidth / 3) + 8;
+  left.onclick = () => buttons.scrollBy({ left: -step(), behavior: "smooth" });
+  right.onclick = () => buttons.scrollBy({ left: step(), behavior: "smooth" });
+  buttons.addEventListener("scroll", arrows, { passive: true });
+  window.addEventListener("resize", arrows);
+
+  // Dragging with a mouse slides the strip like a finger does; a drag is not a tap.
+  let drag = null;
+  buttons.addEventListener("pointerdown", (event) => {
+    if (event.pointerType === "mouse") drag = { x: event.clientX, from: buttons.scrollLeft, moved: false };
+  });
+  window.addEventListener("pointermove", (event) => {
+    if (!drag) return;
+    const dx = event.clientX - drag.x;
+    if (Math.abs(dx) > 5) drag.moved = true;
+    if (drag.moved) buttons.scrollLeft = drag.from - dx;
+  });
+  window.addEventListener("pointerup", () => {
+    if (!drag) return;
+    const moved = drag.moved;
+    drag = null;
+    if (!moved) return;
+    // The click the browser sends right after a drag is swallowed; the guard is gone a moment later, so that
+    // a drag which ends without a click cannot eat the next real tap.
+    const swallow = (event) => { event.stopPropagation(); event.preventDefault(); };
+    buttons.addEventListener("click", swallow, { capture: true, once: true });
+    setTimeout(() => buttons.removeEventListener("click", swallow, { capture: true }), 0);
+  });
+
+  // Settings: every product, grouped by line and sorted by name; ticked ones are on the strip.
+  const renderSettings = () => {
+    document.getElementById("products").replaceChildren(
+      ...groups(products).flatMap((group) => [
+        el("h3", { textContent: group.line }),
+        ...group.products.map((product) => {
+          const box = el("input", { type: "checkbox", checked: selection.has(product.id) });
+          box.onchange = () => { selection.set(product.id, box.checked); renderStrip(); };
+          return el("label", { className: "product" }, box, el("img", { src: product.image, alt: "", loading: "lazy" }), el("span", { textContent: product.label }));
+        }),
+      ]),
+    );
+  };
+  document.getElementById("gear").onclick = () => { renderSettings(); settings.showModal(); };
+  document.getElementById("done").onclick = () => settings.close();
+
   // Leaving the page logs the entry being tapped, so nothing is lost with the tab.
   document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") taps.store(); });
   window.addEventListener("pagehide", () => taps.store());
+  renderStrip();
   render();
 
   // Work offline once loaded.

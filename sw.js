@@ -2,11 +2,19 @@
 // Online, the network is asked first and the cache refreshed, so a new version of the app arrives by itself
 // the next time the page is opened; offline, the cached copy is served.
 const CACHE = "smoke";
-const FILES = ["./", "index.html", "app.js", "manifest.webmanifest", "icon.svg", "icon-192.png", "icon-512.png", "icon-maskable-512.png",
-  "boxes/levia-summer-pearl.png", "boxes/terea-bronze.png", "boxes/terea-turquoise-black-edition.png"];
+const FILES = ["./", "index.html", "app.js", "products.json", "manifest.webmanifest", "icon.svg", "icon-192.png", "icon-512.png", "icon-maskable-512.png"];
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(FILES)).then(() => self.skipWaiting()));
+  event.waitUntil(
+    caches.open(CACHE)
+      .then(async (cache) => {
+        await cache.addAll(FILES);
+        // Every pack picture of the product list, so the settings list and any selection work offline too.
+        const products = await (await fetch("products.json")).json();
+        await Promise.all(products.map((product) => cache.add(product.image).catch(() => {})));
+      })
+      .then(() => self.skipWaiting()),
+  );
 });
 
 self.addEventListener("activate", (event) => {
